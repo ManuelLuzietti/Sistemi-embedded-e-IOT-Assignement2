@@ -5,7 +5,7 @@
 #include "MachineModelSingleton.h"
 #include "MachineModel.h"
 #include "Servo.h"
-#define TCHECK 180000
+#define TCHECK 80
 #define TMAX 40
 #define TMIN 18
 
@@ -17,7 +17,7 @@ class CheckTask : public Task
         On,
         Assistance
     } checkState;
-    int elapsed;
+    long elapsed;
     TMPSensor* tmpSensor;
     Servo* servo;
     Display *display;
@@ -27,6 +27,8 @@ class CheckTask : public Task
     bool to0;
     bool motorTest;
     bool tempTest;
+    bool checkTempExecuted;
+    bool* sleeping;
 
     void testMotor()
     {
@@ -64,13 +66,14 @@ class CheckTask : public Task
 
     void checkTmp()
     {
+        checkTempExecuted = true;
         double temp = tmpSensor->getValue();
-        Serial.println(String("temp ")+ temp);
         if (temp > TMAX || temp < TMIN)
         {
             checkState = Assistance;
             tempTest = false;
             display->print("Assistance required");
+            MachineModelSingleton::getInstance()->setAssistanceState();
         } 
     }
     void initVars()
@@ -81,7 +84,9 @@ class CheckTask : public Task
         to0 = false;
         motorTest = false;
         tempTest = true;
+        checkTempExecuted = false;
     }
+    
 
 public:
     CheckTask(int tmpPin, int servoPin)
@@ -98,27 +103,32 @@ public:
         elapsed = 0;
         initVars();
     }
+    void setDependencies(bool* sleeping){
+        this->sleeping = sleeping;
+    }
 
     void tick()
     {
         switch (checkState)
         {
         case Off:
-            Serial.println("check task off");
+            //Serial.println("check task off");
             elapsed += Task::myPeriod;
-            if (elapsed > TCHECK  && MachineModelSingleton::getInstance()->getMachineState() == Idle )
+            if (elapsed > TCHECK*1000L  && MachineModelSingleton::getInstance()->getMachineState() == Idle && !(*sleeping))
             {
                 checkState = On;
                 servo->on();
                 display->print("Check test");
-                MachineModelSingleton::getInstance()->setAssistanceState();
+                MachineModelSingleton::getInstance()->incrementNTest();
             }
             break;
         case On:
 
-            Serial.println("check on");
+            //Serial.println("check on");
 
-            checkTmp();
+            if(!checkTempExecuted){
+                checkTmp();
+            }
             testMotor();
             if (motorTest && tempTest && checkState == On)
             {
@@ -126,10 +136,11 @@ public:
                 initVars();
                 servo->off();
                 elapsed = 0;
-            }
+                display->print("Ready");
+            } 
             break;
         case Assistance:
-            Serial.println("check assistance");
+            //Serial.println("check assistance");
             //cambiare stato per uscire da assistance
             if(MachineModelSingleton::getInstance()->getMachineState() == Idle ){
                 checkState = Off;

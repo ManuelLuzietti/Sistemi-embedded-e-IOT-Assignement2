@@ -3,14 +3,14 @@
 #include "Sonar.h"
 #include "Task.h"
 #include "Display.h"
-#define TTIMEOUT 10000
+#define TTIMEOUT 10
 class ProdReadyTask : public Task
 {
     Sonar *sonar;
     bool *prodReady;
     bool *readyOn;
     bool waiting;
-    int elapsed;
+    long elapsed;
     bool removedVar;
     Display *display;
     bool glassRemoved;
@@ -56,23 +56,23 @@ public:
         switch (pReadyState)
         {
         case PReadyStates::Off:
-            Serial.println("PreadyOff");
+            //Serial.println("PreadyOff");
             removedVar = false;
             if ((*prodReady))
             {
-                Serial.println("prdReady true");
+                //Serial.println("prdReady true");
                 pReadyState = PReadyStates::On;
                 display->print(String("The " + MachineModelSingleton::getInstance()->getSelectedProduct() + " is ready!"));
                 waiting = true;
             }
             break;
         case PReadyStates::On:
-            Serial.println("Pready On");
+            //Serial.println("Pready On");
             elapsed += Task::myPeriod;
             isGlassRemoved();
-            if (elapsed > TTIMEOUT || glassRemoved)
+            if (elapsed > TTIMEOUT * 1000L || glassRemoved)
             {
-                Serial.println("ok");
+                //Serial.println("ok");
                 elapsed = 0;
                 // waiting = false;
                 removedVar = true;
@@ -84,7 +84,7 @@ public:
             {
                 initVars();
                 pReadyState = PReadyStates::Off;
-                Serial.println("removed glass");
+                //Serial.println("removed glass");
                 display->print("Ready");
             }
         }

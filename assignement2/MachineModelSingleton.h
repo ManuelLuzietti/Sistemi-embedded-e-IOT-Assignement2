@@ -7,6 +7,9 @@
     static MachineModel* machineModel = NULL;
 
     public:
+        static void init(){
+            getInstance();
+        }
         static MachineModel* getInstance(){
             if(machineModel == NULL){
                 machineModel = new MachineModel();

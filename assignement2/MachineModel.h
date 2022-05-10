@@ -8,6 +8,7 @@ enum MachineStates
         Working,
         Assistance
     } ;
+String machineStatesString[NPROD] = {"Idle","Working","Assistance"};
 
 class MachineModel{
     int nproducts = NPROD;
@@ -17,6 +18,7 @@ class MachineModel{
     int sugarLevel;
     MachineStates machineState;
     bool noProducts;
+    int nTest;
     enum Products
     {
         Coffe,
@@ -29,14 +31,12 @@ class MachineModel{
     }
 
     void init(){
-        for (int i = 0; i < nproducts; i++)
-        {
-            qty[i] = maxQtyProd;
-        }
+        refill();
         sugarLevel = 0;
         productSel = Coffe;
         machineState = Idle;
         noProducts = false;
+        nTest = 0;
     }
 
     void setWorkingState()
@@ -76,14 +76,28 @@ class MachineModel{
                 return;
             }
         }
-        Serial.println("ebbene premuto");
         setAssistanceState();
     }
 
     String getSelectedProduct(){
         return productNames[productSel];
     }
-
+    int getNproducts(){
+        int sum = 0;
+        for(int i=0;i<nproducts;i++){
+            sum += qty[i];
+        }
+        return sum;
+    }
+    int getNTest(){
+        return nTest;
+    }
+    String getStatus(){
+        return machineStatesString[machineState];
+    }
+    void incrementNTest(){
+        nTest++;
+    }
     int getSugarLevel(){
         return sugarLevel;
     }
@@ -98,7 +112,18 @@ class MachineModel{
 
     void selectCurrentProduct(){
         qty[productSel]--;
-        Serial.println(qty[productSel]+ String("here"));
+    }
+
+    void refill(){
+        for (int i = 0; i < nproducts; i++)
+        {
+            qty[i] = maxQtyProd;
+        }
+        setIdleState();
+    }
+
+    void recover(){
+        setIdleState();
     }
 };
 

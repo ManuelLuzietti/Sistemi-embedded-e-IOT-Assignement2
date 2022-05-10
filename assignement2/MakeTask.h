@@ -50,7 +50,7 @@ public:
         switch (makeState)
         {
         case Ready:
-            Serial.println("Make ready");
+            //Serial.println("Make ready");
             if (*removed)
             {
                 initVars();
@@ -60,17 +60,18 @@ public:
             }
             break;
         case Off:
-            Serial.println("Make off");
+            //Serial.println("Make off");
             if ((*selectEnd) && !makeEnd && !(*removed))
             {
                 makeState = On;
                 servo->on();
                 making = true;
                 display->print(String("making ") + MachineModelSingleton::getInstance()->getSelectedProduct());
+                MachineModelSingleton::getInstance()->setWorkingState();
             }
             break;
         case On:
-            Serial.println("Make On");
+            // Serial.println("Make On");
             if (angle < 180)
             {
                 angle++;

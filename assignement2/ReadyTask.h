@@ -6,7 +6,7 @@
 #include "MachineModel.h"
 #include "EnableInterrupt.h"
 
-#define TIDLE 60000
+#define TIDLE 60
 
 void wakeUp(void)
 {
@@ -20,6 +20,7 @@ class ReadyTask : public Task
     bool *waiting;
     bool *removed;
     bool readyOn;
+    bool sleeping;
     enum ReadyState
     {
         On,
@@ -27,12 +28,13 @@ class ReadyTask : public Task
         Waiting,
         Sleep
     } readyState;
-    int elapsed;
+    long elapsed;
     int pirPin;
 
 public:
-    ReadyTask(int pirPin):pirPin(pirPin)
-    {}
+    ReadyTask(int pirPin) : pirPin(pirPin)
+    {
+    }
 
     void setDependencies(bool *displaying, bool *initEnd, bool *making, bool *waiting, bool *removed)
     {
@@ -46,6 +48,7 @@ public:
     {
         // nel caso si inizializzino delle vars
         elapsed = 0;
+        sleeping = false;
     }
     void init(int period)
     {
@@ -66,35 +69,40 @@ public:
             sleep_mode();
             sleep_disable();
             disableInterrupt(pirPin);
-            Serial.println("woke up");
+            // Serial.println("woke up");
             readyState = On;
             elapsed = 0;
+            sleeping = false;
             display->print("Ready");
             break;
         case Waiting:
-            Serial.println("Ready Waiting");
+            // Serial.println("Ready Waiting");
             if (*removed && *waiting)
             {
                 initVars();
                 readyState = On;
+                MachineModelSingleton::getInstance()->setIdleState();
                 display->print("Ready");
             }
             break;
         case On:
-            if(MachineModelSingleton::getInstance()->getMachineState()== Assistance){
+            if (MachineModelSingleton::getInstance()->getMachineState() == Assistance)
+            {
                 readyState = Off;
                 break;
             }
-            Serial.println("Ready On");
+            // Serial.println("Ready On");
             readyOn = true;
             if (MachineModelSingleton::getInstance()->getMachineState() == Idle)
             {
                 elapsed += Task::myPeriod;
             }
-            if (elapsed > TIDLE)
+            if (elapsed > TIDLE*1000L)
             {
                 readyState = Sleep;
-                Serial.println(String("Ready On to sleep ") + elapsed);
+                sleeping = true;
+                break;
+                // Serial.println(String("Ready On to sleep ") + elapsed);
             }
             if ((*displaying) || !(*initEnd))
             {
@@ -107,14 +115,16 @@ public:
 
             break;
         case Off:
-            Serial.println("Ready Off");
-            if(MachineModelSingleton::getInstance()->getMachineState() == Assistance){
+            // Serial.println("Ready Off" + String(" ")+ !(*displaying) + " "+ (*initEnd) + " "+ !(*making) + " "+ !(*waiting) + " "+ (MachineModelSingleton::getInstance()->getMachineState() != Assistance));
+            if (MachineModelSingleton::getInstance()->getMachineState() == Assistance)
+            {
                 display->print("Assistance required");
             }
             if (!(*displaying) && (*initEnd) && !(*making) && !(*waiting) && MachineModelSingleton::getInstance()->getMachineState() != Assistance)
             {
                 readyState = On;
                 elapsed = 0;
+                MachineModelSingleton::getInstance()->setIdleState();
                 display->print("Ready");
             }
             break;
@@ -133,6 +143,9 @@ public:
     bool *getReadyOn()
     {
         return &readyOn;
+    }
+    bool* getSleeping(){
+        return &sleeping;
     }
 };
 

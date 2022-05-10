@@ -20,7 +20,7 @@ class SelectTask : public Task
     int prevSugarLevel;
     int sugarLevel;
     int sugarValue;
-    bool * removed;
+    bool *removed;
     enum SelectStates
     {
         Off,
@@ -37,7 +37,7 @@ public:
         btnMake = new ButtonImpl(makePin);
         sugarPot = new Potentiometer(potPin);
     }
-    void setDependencies(bool *initEnd,bool* removed)
+    void setDependencies(bool *initEnd, bool *removed)
     {
         this->initEnd = initEnd;
         this->removed = removed;
@@ -70,7 +70,7 @@ public:
         switch (selectState)
         {
         case Selected:
-            Serial.println("Select Selected");
+            // Serial.println("Select Selected");
             if (*removed)
             {
                 initVars();
@@ -78,15 +78,16 @@ public:
             }
             break;
         case SelectStates::Off:
-            Serial.println("Select Off");
+            // Serial.println("Select Off");
             if ((*initEnd) && (!selectEnd) && MachineModelSingleton::getInstance()->getMachineState() != Assistance)
             {
                 selectState = On;
             }
             break;
         case SelectStates::On:
-            Serial.println("Select On");
-            if(MachineModelSingleton::getInstance()->getMachineState() == Assistance){
+            // Serial.println("Select On");
+            if (MachineModelSingleton::getInstance()->getMachineState() == Assistance)
+            {
                 selectState = Off;
                 display->print("Assistance required");
                 break;
@@ -96,12 +97,14 @@ public:
                 displaying = true;
                 selectState = Displaying;
                 MachineModelSingleton::getInstance()->selectNextProduct();
+                MachineModelSingleton::getInstance()->setWorkingState();
             }
             else if (btnDown->isPressed())
             {
                 displaying = true;
                 selectState = Displaying;
                 MachineModelSingleton::getInstance()->selectPrevProduct();
+                MachineModelSingleton::getInstance()->setWorkingState();
             }
 
             if (btnMake->isPressed())
@@ -111,6 +114,8 @@ public:
                 selectEnd = true;
                 elapsed = 0;
                 MachineModelSingleton::getInstance()->selectCurrentProduct();
+                MachineModelSingleton::getInstance()->setWorkingState();
+
                 break;
             }
             sugarValue = sugarPot->getValue();
@@ -119,16 +124,20 @@ public:
             if (sugarLevel != prevSugarLevel)
             {
                 MachineModelSingleton::getInstance()->setSugarLevel(sugarLevel);
+                MachineModelSingleton::getInstance()->setWorkingState();
+
                 displaying = true;
                 selectState = Displaying;
             }
             break;
         case SelectStates::Displaying:
 
-            Serial.println("Select Displaying");
-            if(MachineModelSingleton::getInstance()->getMachineState() == Assistance){
+            // Serial.println("Select Displaying");
+            if (MachineModelSingleton::getInstance()->getMachineState() == Assistance)
+            {
                 selectState = Off;
                 display->print("Assistance required");
+                initVars();
                 break;
             }
             if (btnMake->isPressed())

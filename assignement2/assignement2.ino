@@ -6,6 +6,8 @@
 #include "ProdReadyTask.h"
 #include "Display.h"
 #include "CheckTask.h"
+#include "CommunicatorTask.h"
+#include "MachineModelSingleton.h"
 #define MAX_PROD 10
 
 Scheduler scheduler;
@@ -15,8 +17,10 @@ Task* task2;
 Task* task3;
 Task* task4;
 Task* task5;
+Task* task6;
 void setup(){
   Serial.begin(9600);
+  MachineModelSingleton::init();
   scheduler.init(25);
   task0 = new InitTask();
   task1 = new ReadyTask(7);
@@ -24,11 +28,13 @@ void setup(){
   task3 = new MakeTask(6);
   task4 = new ProdReadyTask(5,4);
   task5 = new CheckTask(A0,6);
+  task6 = new CommunicatorTask();
 
   ((ReadyTask*) task1)->setDependencies(((SelectTask*)task2)->getDisplaying(),((InitTask*)task0)->getInitEnd(),((MakeTask*)task3)->getMaking(),((ProdReadyTask*)task4)->getWaiting(),((ProdReadyTask*)task4)->getRemoved());
   ((SelectTask*)task2)->setDependencies(((InitTask*)task0)->getInitEnd(),((ProdReadyTask*)task4)->getRemoved());
   ((MakeTask*)task3)->setDependencies(((SelectTask*)task2)->getSelectEnd(),((ProdReadyTask*)task4)->getRemoved());
   ((ProdReadyTask*)task4)->setDependencies(((MakeTask*)task3)->getProdReady(),((ReadyTask*)task1)->getReadyOn());
+  ((CheckTask*)task5)->setDependencies(((ReadyTask*)task1)->getSleeping());
 
   task0->init(100);
   task1->init(100);
@@ -36,6 +42,7 @@ void setup(){
   task3->init(25);
   task4->init(100);
   task5->init(100);
+  task6->init(100);
   
   scheduler.addTask(task0);
   scheduler.addTask(task1); 
@@ -43,12 +50,12 @@ void setup(){
   scheduler.addTask(task3);
   scheduler.addTask(task4);
   scheduler.addTask(task5);
+  scheduler.addTask(task6);
+
   
-  //5/TMAKING
 }
 
 void loop(){
-
   scheduler.schedule();
 }
 
