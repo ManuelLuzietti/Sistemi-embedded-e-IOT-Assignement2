@@ -26,7 +26,6 @@ public class CoffeeMachineManager extends Application {
         stage.setTitle("Coffee Machine Manager");
         stage.setScene(scene);
         stage.show();
-        PauseTransition transition = new PauseTransition(Duration.millis(500));
 
         new Thread() {
             @Override
