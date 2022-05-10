@@ -18,7 +18,7 @@ void Display::print(String string)
 {
     this->lcd->clear();
     this->lcd->setCursor(0, 0);
-    if (string.length() > 16)
+    if (string.length() >= 16)
     {
         this->lcd->print(string.substring(0, 16));
         this->lcd->setCursor(0,1);

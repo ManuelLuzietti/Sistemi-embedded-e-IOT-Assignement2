@@ -97,14 +97,20 @@ public:
                 displaying = true;
                 selectState = Displaying;
                 MachineModelSingleton::getInstance()->selectNextProduct();
-                MachineModelSingleton::getInstance()->setWorkingState();
+                if (MachineModelSingleton::getInstance()->getMachineState() != Assistance)
+                {
+                    MachineModelSingleton::getInstance()->setWorkingState();
+                }
             }
             else if (btnDown->isPressed())
             {
                 displaying = true;
                 selectState = Displaying;
                 MachineModelSingleton::getInstance()->selectPrevProduct();
-                MachineModelSingleton::getInstance()->setWorkingState();
+                if (MachineModelSingleton::getInstance()->getMachineState() != Assistance)
+                {
+                    MachineModelSingleton::getInstance()->setWorkingState();
+                }
             }
 
             if (btnMake->isPressed())
@@ -114,8 +120,10 @@ public:
                 selectEnd = true;
                 elapsed = 0;
                 MachineModelSingleton::getInstance()->selectCurrentProduct();
-                MachineModelSingleton::getInstance()->setWorkingState();
-
+if (MachineModelSingleton::getInstance()->getMachineState() != Assistance)
+                {
+                    MachineModelSingleton::getInstance()->setWorkingState();
+                }
                 break;
             }
             sugarValue = sugarPot->getValue();
@@ -136,7 +144,7 @@ public:
             if (MachineModelSingleton::getInstance()->getMachineState() == Assistance)
             {
                 selectState = Off;
-                display->print("Assistance required");
+                // display->print("Assistance required");
                 initVars();
                 break;
             }

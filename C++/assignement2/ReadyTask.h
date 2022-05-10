@@ -21,6 +21,7 @@ class ReadyTask : public Task
     bool *removed;
     bool readyOn;
     bool sleeping;
+    bool printedOnce;
     enum ReadyState
     {
         On,
@@ -49,6 +50,7 @@ public:
         // nel caso si inizializzino delle vars
         elapsed = 0;
         sleeping = false;
+        printedOnce = false;
     }
     void init(int period)
     {
@@ -116,9 +118,10 @@ public:
             break;
         case Off:
             // Serial.println("Ready Off" + String(" ")+ !(*displaying) + " "+ (*initEnd) + " "+ !(*making) + " "+ !(*waiting) + " "+ (MachineModelSingleton::getInstance()->getMachineState() != Assistance));
-            if (MachineModelSingleton::getInstance()->getMachineState() == Assistance)
+            if (MachineModelSingleton::getInstance()->getMachineState() == Assistance && !printedOnce)
             {
                 display->print("Assistance required");
+                printedOnce = true;
             }
             if (!(*displaying) && (*initEnd) && !(*making) && !(*waiting) && MachineModelSingleton::getInstance()->getMachineState() != Assistance)
             {

@@ -8,7 +8,8 @@ class MakeTask : public Task
     {
         Off,
         On,
-        Ready
+        Ready,
+        SwitchingServoOff
     } makeState;
     Servo *servo;
     int angle;
@@ -19,11 +20,13 @@ class MakeTask : public Task
     bool making;
     bool prodReady;
     bool *removed;
+    int elapsed;
 
 public:
     MakeTask(int servoPin)
     {
         servo = new Servo(servoPin);
+        servo->on();
     }
     void setDependencies(bool *selectEnd, bool *removed)
     {
@@ -36,6 +39,7 @@ public:
         making = false;
         prodReady = false;
         angle = 0;
+        elapsed = 0;
     }
     void init(int period)
     {
@@ -49,23 +53,33 @@ public:
     {
         switch (makeState)
         {
+        case SwitchingServoOff:
+            elapsed += Task::myPeriod;
+            if(elapsed >300){
+                makeState = Off;
+                elapsed = 0;
+                servo->off();
+            }
+        break;
         case Ready:
-            //Serial.println("Make ready");
+            // Serial.println("Make ready");
             if (*removed)
             {
+                Serial.println("removed");
                 initVars();
-                makeState = Off;
+                makeState = SwitchingServoOff;
                 servo->setPosition(angle);
-                servo->off();
+                //servo->off();
             }
             break;
         case Off:
-            //Serial.println("Make off");
+            // Serial.println("Make off");
             if ((*selectEnd) && !makeEnd && !(*removed))
             {
                 makeState = On;
                 servo->on();
                 making = true;
+                angle = 0;
                 display->print(String("making ") + MachineModelSingleton::getInstance()->getSelectedProduct());
                 MachineModelSingleton::getInstance()->setWorkingState();
             }
