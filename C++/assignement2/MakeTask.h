@@ -65,7 +65,6 @@ public:
             // Serial.println("Make ready");
             if (*removed)
             {
-                Serial.println("removed");
                 initVars();
                 makeState = SwitchingServoOff;
                 servo->setPosition(angle);
