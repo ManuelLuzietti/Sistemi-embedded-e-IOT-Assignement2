@@ -5,6 +5,7 @@
 #include "MachineModelSingleton.h"
 #include "MachineModel.h"
 #include "Servo.h"
+#include "Display.h"
 #define TCHECK 80
 #define TMAX 40
 #define TMIN 18
