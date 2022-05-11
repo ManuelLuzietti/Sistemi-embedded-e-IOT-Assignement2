@@ -115,13 +115,13 @@ public:
 
             if (btnMake->isPressed())
             {
-                selectState = Selected;
-                displaying = false;
-                selectEnd = true;
-                elapsed = 0;
                 MachineModelSingleton::getInstance()->selectCurrentProduct();
-if (MachineModelSingleton::getInstance()->getMachineState() != Assistance)
+                if (MachineModelSingleton::getInstance()->getMachineState() != Assistance)
                 {
+                    selectState = Selected;
+                    displaying = false;
+                    selectEnd = true;
+                    elapsed = 0;
                     MachineModelSingleton::getInstance()->setWorkingState();
                 }
                 break;

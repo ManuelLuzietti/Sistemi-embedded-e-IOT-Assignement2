@@ -36,12 +36,12 @@ public class CoffeeMachineManager extends Application {
                     try {
                         if (channel.isMsgAvailable()) {
                             String msg = channel.receiveMsg();
-                            System.out.println(msg);
+                            //System.out.println(msg);
                             String[] params = msg.split(" ");
                             if(params.length != 3){
                                 continue;
                             }
-                            System.out.println(Arrays.stream(params).toList());
+                            //System.out.println(Arrays.stream(params).toList());
                             controller.setParams(params);
                         }
                         Thread.sleep(100);
